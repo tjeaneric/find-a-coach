@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useRequestStore = defineStore('requestStore', () => {
   const requests = ref([])
@@ -14,5 +14,8 @@ export const useRequestStore = defineStore('requestStore', () => {
 
     requests.value.push(newRequest)
   }
-  return { requests, addRequest }
+
+  const hasRequests = computed(() => requests.value && requests.value.length > 0)
+
+  return { requests, addRequest, hasRequests }
 })
