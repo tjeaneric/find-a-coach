@@ -9,7 +9,7 @@ const emailLink = computed(() => 'mailto:' + props.email)
 <template>
   <li>
     <div>
-      <a :href="emailLink">{{ email }}</a>
+      <a :href="emailLink" target="_blank">{{ email }}</a>
     </div>
     <p>{{ message }}</p>
   </li>

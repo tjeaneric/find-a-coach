@@ -6,8 +6,13 @@ import CoachItem from '../../components/coaches/CoachItem.vue'
 import CoachFilterVue from '../../components/coaches/CoachFilter.vue'
 
 const coachesStore = useCoachStore()
-const { hasCoaches, isCoach } = coachesStore
+
+const { hasCoaches, isCoach, loadCoaches } = coachesStore
 const { coaches } = storeToRefs(coachesStore)
+
+loadCoaches()
+
+console.log(isCoach)
 const activeFilters = ref({ frontend: true, backend: true, career: true })
 
 const setFilters = (updatedFilters) => {
@@ -28,7 +33,7 @@ const filteredCoaches = computed(() =>
   <section><CoachFilterVue @change-filter="setFilters" /></section>
   <base-card>
     <div class="controls">
-      <base-button mode="outline">Refresh</base-button>
+      <base-button mode="outline" @click="loadCoaches">Refresh</base-button>
       <base-button v-if="!isCoach" link to="/register">Register as a coach</base-button>
     </div>
     <ul v-if="hasCoaches">

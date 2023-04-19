@@ -1,11 +1,9 @@
 <script setup>
 import { useRequestStore } from '../../stores/requests/requests.js'
-import { storeToRefs } from 'pinia'
 import RequestItem from '../../components/requests/RequestItem.vue'
 
 const requestStore = useRequestStore()
-const { requests } = storeToRefs(requestStore)
-const { hasRequests } = requestStore
+const { hasRequests, filteredRequests } = requestStore
 </script>
 
 <template>
@@ -15,7 +13,7 @@ const { hasRequests } = requestStore
         <h2>Requests Received</h2>
         <ul v-if="hasRequests">
           <RequestItem
-            v-for="req in requests"
+            v-for="req in filteredRequests"
             :key="req.id"
             :email="req.userEmail"
             :message="req.message"

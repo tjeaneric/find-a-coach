@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 export const useCoachStore = defineStore('coachStore', () => {
   const coaches = ref([
     {
@@ -28,17 +30,44 @@ export const useCoachStore = defineStore('coachStore', () => {
 
   const isCoach = computed(() => coaches.value.some((user) => user.id === userId.value))
 
-  const registerCoach = (data) => {
+  const registerCoach = async (coachData) => {
     const newCoach = {
-      id: userId.value,
-      firstName: data.first,
-      lastName: data.last,
-      areas: data.areas,
-      description: data.desc,
-      hourlyRate: data.rate
+      firstName: coachData.first,
+      lastName: coachData.last,
+      areas: coachData.areas,
+      description: coachData.desc,
+      hourlyRate: coachData.rate
     }
 
-    coaches.value.push(newCoach)
+    const response = await fetch(`${backendUrl}/coaches/${userId.value}.json`, {
+      method: 'PUT',
+      body: JSON.stringify(newCoach),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    const data = await response.json()
+    console.log(data)
+
+    coaches.value.push({ ...newCoach, id: userId.value })
   }
-  return { coaches, hasCoaches, registerCoach, isCoach }
+
+  const loadCoaches = async () => {
+    const response = await fetch(`${backendUrl}/coaches.json`)
+    const data = await response.json()
+
+    const formattedCoaches = []
+    for (const key in data) {
+      const coach = {
+        id: key,
+        firstName: data[key].firstName,
+        lastName: data[key].lastName,
+        areas: data[key].areas,
+        description: data[key].description,
+        hourlyRate: data[key].hourlyRate
+      }
+
+      formattedCoaches.push(coach)
+    }
+    coaches.value = formattedCoaches
+  }
+  return { coaches, hasCoaches, registerCoach, isCoach, userId, loadCoaches }
 })
