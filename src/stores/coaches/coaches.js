@@ -4,26 +4,9 @@ import { computed, ref } from 'vue'
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export const useCoachStore = defineStore('coachStore', () => {
-  const coaches = ref([
-    {
-      id: 'c1',
-      firstName: 'Maximilian',
-      lastName: 'Schwarzmüller',
-      areas: ['frontend', 'backend', 'career'],
-      description:
-        "I'm Maximilian and I've worked as a freelance web developer for years. Let me help you become a developer as well!",
-      hourlyRate: 30
-    },
-    {
-      id: 'c2',
-      firstName: 'Julie',
-      lastName: 'Jones',
-      areas: ['frontend', 'career'],
-      description:
-        'I am Julie and as a senior developer in a big tech company, I can help you get your first job or progress in your current role.',
-      hourlyRate: 30
-    }
-  ])
+  const isLoading = ref(false)
+  const error = ref(null)
+  const coaches = ref([])
   const hasCoaches = computed(() => coaches.value && coaches.value.length > 0)
 
   const userId = ref('c3')
@@ -51,23 +34,34 @@ export const useCoachStore = defineStore('coachStore', () => {
   }
 
   const loadCoaches = async () => {
-    const response = await fetch(`${backendUrl}/coaches.json`)
-    const data = await response.json()
+    isLoading.value = true
+    try {
+      const response = await fetch(`${backendUrl}/coaches.json`)
+      const data = await response.json()
 
-    const formattedCoaches = []
-    for (const key in data) {
-      const coach = {
-        id: key,
-        firstName: data[key].firstName,
-        lastName: data[key].lastName,
-        areas: data[key].areas,
-        description: data[key].description,
-        hourlyRate: data[key].hourlyRate
+      if (!response.ok) {
+        const error = new Error(data.message || 'Failed to fetch')
+        throw error
       }
 
-      formattedCoaches.push(coach)
+      const formattedCoaches = []
+      for (const key in data) {
+        const coach = {
+          id: key,
+          firstName: data[key].firstName,
+          lastName: data[key].lastName,
+          areas: data[key].areas,
+          description: data[key].description,
+          hourlyRate: data[key].hourlyRate
+        }
+
+        formattedCoaches.push(coach)
+      }
+      coaches.value = formattedCoaches
+      isLoading.value = false
+    } catch (err) {
+      error.value = err.message || 'Something went wrong'
     }
-    coaches.value = formattedCoaches
   }
-  return { coaches, hasCoaches, registerCoach, isCoach, userId, loadCoaches }
+  return { coaches, hasCoaches, registerCoach, isCoach, userId, loadCoaches, isLoading, error }
 })
