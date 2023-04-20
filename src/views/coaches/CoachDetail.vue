@@ -14,6 +14,9 @@ const fullName = computed(() => coach.firstName + ' ' + coach.lastName)
 </script>
 
 <template>
+  <div>
+
+
   <section>
     <base-card>
       <h2>{{ fullName }}</h2>
@@ -35,4 +38,6 @@ const fullName = computed(() => coach.firstName + ' ' + coach.lastName)
       <p>{{ coach.description }}</p>
     </base-card>
   </section>
+</div>
+
 </template>

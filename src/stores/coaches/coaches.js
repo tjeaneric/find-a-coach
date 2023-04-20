@@ -4,12 +4,13 @@ import { computed, ref } from 'vue'
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export const useCoachStore = defineStore('coachStore', () => {
+  const lastFetch = ref(null)
   const isLoading = ref(false)
   const error = ref(null)
   const coaches = ref([])
   const hasCoaches = computed(() => coaches.value && coaches.value.length > 0)
 
-  const userId = ref('c3')
+  const userId = ref('c1')
 
   const isCoach = computed(() => coaches.value.some((user) => user.id === userId.value))
 
@@ -33,7 +34,14 @@ export const useCoachStore = defineStore('coachStore', () => {
     coaches.value.push({ ...newCoach, id: userId.value })
   }
 
-  const loadCoaches = async () => {
+  const shouldUpdate = () => {
+    if (!lastFetch.value) return true
+    const currentTimeStamp = new Date().getTime()
+    return (currentTimeStamp - lastFetch.value) / 1000 > 60
+  }
+
+  const loadCoaches = async (forceRefresh = false) => {
+    if (!forceRefresh && !shouldUpdate()) return
     isLoading.value = true
     try {
       const response = await fetch(`${backendUrl}/coaches.json`)
@@ -61,7 +69,10 @@ export const useCoachStore = defineStore('coachStore', () => {
       isLoading.value = false
     } catch (err) {
       error.value = err.message || 'Something went wrong'
+      isLoading.value = false
     }
+    lastFetch.value = new Date().getTime()
   }
+
   return { coaches, hasCoaches, registerCoach, isCoach, userId, loadCoaches, isLoading, error }
 })
