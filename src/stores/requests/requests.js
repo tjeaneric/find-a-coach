@@ -63,6 +63,8 @@ export const useRequestStore = defineStore('requestStore', () => {
       isLoading.value = false
     } catch (err) {
       error.value = err.message || 'Something went wrong'
+      console.log(error.value)
+      isLoading.value = false
     }
   }
 
@@ -75,5 +77,5 @@ export const useRequestStore = defineStore('requestStore', () => {
   const filteredRequests = computed(() =>
     requestsList.value.filter((req) => req.coachId === userId.value)
   )
-  return { addRequest, hasRequests, filteredRequests, loadRequests, isLoading }
+  return { addRequest, hasRequests, filteredRequests, loadRequests, isLoading, error }
 })

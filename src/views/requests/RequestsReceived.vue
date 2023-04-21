@@ -13,7 +13,9 @@ const errorHandler = () => (error.value = null)
 
 <template>
   <div>
-    <base-dialog :show="!!error" title="An error occured!" @close="errorHandler"></base-dialog>
+    <base-dialog :show="!!error" title="An error occured!" @close="errorHandler">
+      <p>{{ error }}</p>
+    </base-dialog>
     <section>
       <base-card>
         <header>
