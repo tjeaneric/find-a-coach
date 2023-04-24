@@ -1,5 +1,5 @@
 <script setup>
-import { useRequestStore } from '../../stores/requests/requests.js'
+import { useRequestStore } from '@/stores/requests/requests.js'
 import RequestItem from '../../components/requests/RequestItem.vue'
 import { storeToRefs } from 'pinia'
 

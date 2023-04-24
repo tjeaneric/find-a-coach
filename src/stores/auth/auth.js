@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('authStore', () => {
   const error = ref(null)
 
   const setUser = (authData) => {
-    token.value = authData.tokenId
+    token.value = authData.idToken
     userId.value = authData.localId
     tokenExpiration.value = authData.expiresIn
   }
@@ -64,7 +64,6 @@ export const useAuthStore = defineStore('authStore', () => {
         )
         throw error
       }
-      console.log(data)
       setUser(data)
       isLoading.value = false
     } catch (err) {
@@ -73,5 +72,5 @@ export const useAuthStore = defineStore('authStore', () => {
     }
   }
 
-  return { signup, login, userId, isLoading, error }
+  return { signup, login, userId, isLoading, error, token }
 })

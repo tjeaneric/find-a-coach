@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useCoachStore } from '../../stores/coaches/coaches.js'
+import { useCoachStore } from '@/stores/coaches/coaches.js'
 import CoachItem from '../../components/coaches/CoachItem.vue'
 import CoachFilterVue from '../../components/coaches/CoachFilter.vue'
 

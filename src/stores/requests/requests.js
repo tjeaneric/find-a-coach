@@ -1,10 +1,13 @@
 import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import { useCoachStore } from '../coaches/coaches'
+import { useAuthStore } from '../auth/auth'
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export const useRequestStore = defineStore('requestStore', () => {
+  const { token } = storeToRefs(useAuthStore())
+
   const isLoading = ref(false)
   const error = ref(null)
   const { userId } = storeToRefs(useCoachStore())
@@ -40,7 +43,9 @@ export const useRequestStore = defineStore('requestStore', () => {
   const loadRequests = async () => {
     isLoading.value = true
     try {
-      const response = await fetch(`${backendUrl}/requests/${userId.value}.json`)
+      const response = await fetch(
+        `${backendUrl}/requests/${userId.value}.json?auth=${token.value}`
+      )
       const data = await response.json()
 
       if (!response.ok) {

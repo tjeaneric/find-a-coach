@@ -1,16 +1,18 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { useAuthStore } from '../auth/auth'
+import { storeToRefs } from 'pinia'
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export const useCoachStore = defineStore('coachStore', () => {
+  const { userId, token } = storeToRefs(useAuthStore())
+
   const lastFetch = ref(null)
   const isLoading = ref(false)
   const error = ref(null)
   const coaches = ref([])
   const hasCoaches = computed(() => coaches.value && coaches.value.length > 0)
-
-  const userId = ref('c1')
 
   const isCoach = computed(() => coaches.value.some((user) => user.id === userId.value))
 
@@ -23,15 +25,28 @@ export const useCoachStore = defineStore('coachStore', () => {
       hourlyRate: coachData.rate
     }
 
-    const response = await fetch(`${backendUrl}/coaches/${userId.value}.json`, {
-      method: 'PUT',
-      body: JSON.stringify(newCoach),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    const data = await response.json()
-    console.log(data)
+    try {
+      const response = await fetch(
+        `${backendUrl}/coaches/${userId.value}.json?auth=${token.value}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(newCoach),
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+      const data = await response.json()
+      if (!response.ok) {
+        const error = new Error(
+          data.error.message?.toLowerCase() || data.error || 'Failed to fetch'
+        )
+        throw error
+      }
 
-    coaches.value.push({ ...newCoach, id: userId.value })
+      coaches.value.push({ ...newCoach, id: userId.value })
+    } catch (err) {
+      error.value = err.message || 'Something went wrong'
+      isLoading.value = false
+    }
   }
 
   const shouldUpdate = () => {
