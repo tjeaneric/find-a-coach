@@ -44,7 +44,7 @@ export const useRequestStore = defineStore('requestStore', () => {
       const data = await response.json()
 
       if (!response.ok) {
-        const error = new Error(data.message || 'Failed to fetch requests')
+        const error = new Error(data.error || 'Failed to fetch requests')
         throw error
       }
 
@@ -63,7 +63,6 @@ export const useRequestStore = defineStore('requestStore', () => {
       isLoading.value = false
     } catch (err) {
       error.value = err.message || 'Something went wrong'
-      console.log(error.value)
       isLoading.value = false
     }
   }
