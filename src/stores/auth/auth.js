@@ -3,18 +3,19 @@ import { ref, computed } from 'vue'
 
 const authSignUrl = import.meta.env.VITE_AUTH_SIGNUP_URL
 const authLoginUrl = import.meta.env.VITE_AUTH_LOGIN_URL
+let timer
 
 export const useAuthStore = defineStore('authStore', () => {
   const token = ref(null)
   const userId = ref(null)
-  const tokenExpiration = ref(null)
   const isLoading = ref(false)
   const error = ref(null)
+  const didAutoLogout = ref(false)
 
   const setUser = (authData) => {
     token.value = authData.idToken
     userId.value = authData.localId
-    tokenExpiration.value = authData.expiresIn
+    didAutoLogout.value = false
   }
 
   const isLoggedIn = computed(() => !!token.value)
@@ -40,9 +41,15 @@ export const useAuthStore = defineStore('authStore', () => {
         throw error
       }
 
+      const expireTime = +data.expiresIn * 1000
+      const expirationDate = new Date().getTime() + expireTime
+
       // Store auth data to local storage
       localStorage.setItem('token', data.idToken)
       localStorage.setItem('userId', data.localId)
+      localStorage.setItem('tokenExpiration', expirationDate)
+
+      timer = setTimeout(() => setAutoLogout(), expireTime)
 
       setUser(data)
       isLoading.value = false
@@ -55,9 +62,15 @@ export const useAuthStore = defineStore('authStore', () => {
   const autoLogin = () => {
     const loginData = {
       idToken: localStorage.getItem('token'),
-      localId: localStorage.getItem('userId'),
-      expiresIn: null
+      localId: localStorage.getItem('userId')
     }
+
+    const tokenExpiration = +localStorage.getItem('tokenExpiration')
+    const expiresIn = tokenExpiration - new Date().getTime()
+
+    if (expiresIn < 0) return
+    else timer = setTimeout(() => setAutoLogout(), expiresIn)
+
     if (loginData.idToken && loginData.localId) {
       setUser(loginData)
     }
@@ -72,10 +85,31 @@ export const useAuthStore = defineStore('authStore', () => {
   }
 
   const logout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    localStorage.removeItem('tokenExpiration')
+
+    clearTimeout(timer)
+
     token.value = null
     userId.value = null
-    tokenExpiration.value = null
   }
 
-  return { signup, login, userId, isLoading, error, token, isLoggedIn, logout, autoLogin }
+  const setAutoLogout = () => {
+    logout()
+    didAutoLogout.value = true
+  }
+
+  return {
+    signup,
+    login,
+    userId,
+    isLoading,
+    error,
+    token,
+    isLoggedIn,
+    logout,
+    autoLogin,
+    didAutoLogout
+  }
 })

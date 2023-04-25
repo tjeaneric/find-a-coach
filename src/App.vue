@@ -1,11 +1,20 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import TheHeader from './components/layout/TheHeader.vue'
 import { useAuthStore } from '@/stores/auth/auth'
+import { watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
+const router = useRouter()
 const { autoLogin } = useAuthStore()
+const { didAutoLogout } = storeToRefs(useAuthStore())
 
 autoLogin()
+watch(didAutoLogout, (curVal, oldVal) => {
+  if (curVal && curVal !== oldVal) {
+    router.replace('/coaches')
+  }
+})
 </script>
 
 <template>
