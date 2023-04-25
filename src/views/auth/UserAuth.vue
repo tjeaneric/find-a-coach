@@ -2,7 +2,10 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth/auth.js'
 import { storeToRefs } from 'pinia'
+import { useRouter, useRoute } from 'vue-router'
 
+const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { signup, login } = authStore
 const { isLoading, error } = storeToRefs(authStore)
@@ -12,7 +15,7 @@ const password = ref('')
 const formIsValid = ref(true)
 const mode = ref('login')
 
-const submitForm = () => {
+const submitForm = async () => {
   formIsValid.value = true
   if (email.value === '' || !email.value.includes('@') || password.value.length < 6) {
     formIsValid.value = false
@@ -22,10 +25,12 @@ const submitForm = () => {
   const authData = { email: email.value, password: password.value }
 
   if (mode.value == 'login') {
-    login(authData)
+    await login(authData)
   } else {
-    signup(authData)
+    await signup(authData)
   }
+  const redirectUrl = `/${route.query.redirect || 'coaches'}`
+  if (!error.value) router.replace(redirectUrl)
 }
 const switchAuthMode = () => {
   if (mode.value === 'login') {

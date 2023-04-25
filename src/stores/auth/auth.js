@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const authSignUrl = import.meta.env.VITE_AUTH_SIGNUP_URL
 const authLoginUrl = import.meta.env.VITE_AUTH_LOGIN_URL
@@ -16,6 +16,8 @@ export const useAuthStore = defineStore('authStore', () => {
     userId.value = authData.localId
     tokenExpiration.value = authData.expiresIn
   }
+
+  const isLoggedIn = computed(() => !!token.value)
 
   const signup = async (userData) => {
     isLoading.value = true
@@ -58,6 +60,7 @@ export const useAuthStore = defineStore('authStore', () => {
         headers: { 'Content-Type': 'application/json' }
       })
       const data = await response.json()
+
       if (!response.ok) {
         const error = new Error(
           data.error.message.toLowerCase() || 'Failed to authenticate, check your login data'
@@ -72,5 +75,11 @@ export const useAuthStore = defineStore('authStore', () => {
     }
   }
 
-  return { signup, login, userId, isLoading, error, token }
+  const logout = () => {
+    token.value = null
+    userId.value = null
+    tokenExpiration.value = null
+  }
+
+  return { signup, login, userId, isLoading, error, token, isLoggedIn, logout }
 })

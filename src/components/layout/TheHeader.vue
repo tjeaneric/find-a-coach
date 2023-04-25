@@ -1,5 +1,16 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth/auth'
+import { storeToRefs } from 'pinia'
+
+const router = useRouter()
+const { isLoggedIn } = storeToRefs(useAuthStore())
+const { logout } = useAuthStore()
+
+const logoutUser = () => {
+  logout()
+  router.replace('/coaches')
+}
 </script>
 
 <template>
@@ -8,7 +19,11 @@ import { RouterLink } from 'vue-router'
       <h1><router-link to="/">Find a Coach</router-link></h1>
       <ul>
         <li><router-link to="/coaches">All Coaches</router-link></li>
-        <li><router-link to="/requests">Requests</router-link></li>
+        <li v-if="isLoggedIn"><router-link to="/requests">Requests</router-link></li>
+        <li v-else><router-link to="/auth">Login</router-link></li>
+        <li v-if="isLoggedIn">
+          <base-button @click="logoutUser">Logout</base-button>
+        </li>
       </ul>
     </nav>
   </header>

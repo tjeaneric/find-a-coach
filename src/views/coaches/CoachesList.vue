@@ -4,8 +4,10 @@ import { storeToRefs } from 'pinia'
 import { useCoachStore } from '@/stores/coaches/coaches.js'
 import CoachItem from '../../components/coaches/CoachItem.vue'
 import CoachFilterVue from '../../components/coaches/CoachFilter.vue'
+import { useAuthStore } from '@/stores/auth/auth'
 
 const coachesStore = useCoachStore()
+const { isLoggedIn } = storeToRefs(useAuthStore())
 
 const { loadCoaches } = coachesStore
 const { coaches, isLoading, isCoach, hasCoaches, error } = storeToRefs(coachesStore)
@@ -39,7 +41,10 @@ const errorHandler = () => (error.value = null)
     <base-card>
       <div class="controls">
         <base-button mode="outline" @click="loadCoaches(true)">Refresh</base-button>
-        <base-button v-if="!isLoading && !isCoach" link to="/register"
+        <base-button v-if="!isLoggedIn" link to="/auth?redirect=register"
+          >Login to Register as a coach</base-button
+        >
+        <base-button v-if="isLoggedIn && !isLoading && !isCoach" link to="/register"
           >Register as a coach</base-button
         >
       </div>

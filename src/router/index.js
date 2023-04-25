@@ -6,6 +6,8 @@ import ContactCoach from '../views/requests/ContactCoach.vue'
 import RequestsReceived from '../views/requests/RequestsReceived.vue'
 import UserAuth from '../views/auth/UserAuth.vue'
 import NotFound from '../views/NotFound.vue'
+import { useAuthStore } from '@/stores/auth/auth'
+import { storeToRefs } from 'pinia'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,17 +36,20 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: CoachRegistration
+      component: CoachRegistration,
+      meta: { requiresAuth: true }
     },
     {
       path: '/requests',
       name: 'request',
-      component: RequestsReceived
+      component: RequestsReceived,
+      meta: { requiresAuth: true }
     },
     {
       path: '/auth',
       name: 'auth',
-      component: UserAuth
+      component: UserAuth,
+      meta: { requiresUnauth: true }
     },
     {
       path: '/:notFound(.*)*',
@@ -52,6 +57,15 @@ const router = createRouter({
       component: NotFound
     }
   ]
+})
+
+router.beforeEach((to, _, next) => {
+  const { isLoggedIn } = storeToRefs(useAuthStore())
+  console.log(isLoggedIn.value)
+  console.log(to.meta.requiresUnauth)
+  if (to.meta.requiresAuth && !isLoggedIn.value) next('/auth')
+  else if (to.meta.requiresUnauth && isLoggedIn.value) next('/coaches')
+  else next()
 })
 
 export default router
