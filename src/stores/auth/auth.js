@@ -19,14 +19,15 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const isLoggedIn = computed(() => !!token.value)
 
-  const signup = async (userData) => {
+  const auth = async (payload) => {
+    const url = payload.mode === 'login' ? `${authLoginUrl}` : `${authSignUrl}`
     isLoading.value = true
     try {
-      const response = await fetch(`${authSignUrl}`, {
+      const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
-          email: userData.email,
-          password: userData.password,
+          email: payload.email,
+          password: payload.password,
           returnSecureToken: true
         }),
         headers: { 'Content-Type': 'application/json' }
@@ -38,7 +39,11 @@ export const useAuthStore = defineStore('authStore', () => {
         )
         throw error
       }
-      console.log(data)
+
+      // Store auth data to local storage
+      localStorage.setItem('token', data.idToken)
+      localStorage.setItem('userId', data.localId)
+
       setUser(data)
       isLoading.value = false
     } catch (err) {
@@ -47,32 +52,23 @@ export const useAuthStore = defineStore('authStore', () => {
     }
   }
 
-  const login = async (loginData) => {
-    isLoading.value = true
-    try {
-      const response = await fetch(`${authLoginUrl}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-          returnSecureToken: true
-        }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = new Error(
-          data.error.message.toLowerCase() || 'Failed to authenticate, check your login data'
-        )
-        throw error
-      }
-      setUser(data)
-      isLoading.value = false
-    } catch (err) {
-      isLoading.value = false
-      error.value = err.message || 'Failed to authenticate, try later.'
+  const autoLogin = () => {
+    const loginData = {
+      idToken: localStorage.getItem('token'),
+      localId: localStorage.getItem('userId'),
+      expiresIn: null
     }
+    if (loginData.idToken && loginData.localId) {
+      setUser(loginData)
+    }
+  }
+
+  const signup = async (userData) => {
+    await auth({ ...userData, mode: 'signup' })
+  }
+
+  const login = async (loginData) => {
+    await auth({ ...loginData, mode: 'login' })
   }
 
   const logout = () => {
@@ -81,5 +77,5 @@ export const useAuthStore = defineStore('authStore', () => {
     tokenExpiration.value = null
   }
 
-  return { signup, login, userId, isLoading, error, token, isLoggedIn, logout }
+  return { signup, login, userId, isLoading, error, token, isLoggedIn, logout, autoLogin }
 })

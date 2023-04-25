@@ -1,6 +1,11 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import TheHeader from './components/layout/TheHeader.vue'
+import { useAuthStore } from '@/stores/auth/auth'
+
+const { autoLogin } = useAuthStore()
+
+autoLogin()
 </script>
 
 <template>

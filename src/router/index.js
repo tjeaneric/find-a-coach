@@ -61,8 +61,7 @@ const router = createRouter({
 
 router.beforeEach((to, _, next) => {
   const { isLoggedIn } = storeToRefs(useAuthStore())
-  console.log(isLoggedIn.value)
-  console.log(to.meta.requiresUnauth)
+
   if (to.meta.requiresAuth && !isLoggedIn.value) next('/auth')
   else if (to.meta.requiresUnauth && isLoggedIn.value) next('/coaches')
   else next()
